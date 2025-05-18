@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Automation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6C5CE7;
+      --primary-light: #A29BFE;
+      --success: #00B894;
+      --danger: #D63031;
+      --dark: #2D3436;
+      --light: #F5F6FA;
+      --gray: #636E72;
+      --card-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      
+      /* Light mode defaults */
+      --bg-color: #F5F6FA;
+      --text-color: #2D3436;
+      --card-bg: white;
+      --card-border: rgba(0,0,0,0.03);
+    }
+
+    .dark-mode {
+      --bg-color: #1E1E2E;
+      --text-color: #F5F6FA;
+      --card-bg: #2D2D42;
+      --card-border: rgba(255,255,255,0.05);
+      --light: #2D2D42;
+      --gray: #A0A0A0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeIn 0.8s ease-out;
+      width: 100%;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--gray);
+      font-weight: 400;
+      max-width: 500px;
+      line-height: 1.5;
+      margin: 0 auto;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      transition: var(--transition);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .theme-toggle:hover {
+      transform: rotate(30deg);
+    }
+
+    .voice-notice {
+      background: var(--primary);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      margin: 1.5rem 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+      animation: slideUp 0.6s ease-out 0.3s both;
+    }
+
+    .voice-notice i {
+      font-size: 1.1rem;
+    }
+
+    .devices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .device-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      padding: 1.8rem;
+      transition: var(--transition);
+      border: 1px solid var(--card-border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .device-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary);
+      transition: var(--transition);
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    .device-card.active::before {
+      transform: scaleX(1);
+    }
+
+    .device-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    .device-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .device-icon {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 14px;
+      color: white;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-right: 1.2rem;
+      box-shadow: 0 6px 15px rgba(108, 92, 231, 0.3);
+    }
+
+    .device-info {
+      flex: 1;
+    }
+
+    .device-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+      color: var(--text-color);
+    }
+
+    .device-status {
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--gray);
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-on {
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 1.5s infinite;
+    }
+
+    .status-off {
+      background: var(--danger);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .btn-on {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-off {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn i {
+      font-size: 0.9rem;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(0, 184, 148, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 1.5rem;
+      }
+      
+      .devices-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .theme-toggle {
+        position: relative;
+        margin: 0 auto 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dashboard</h1>
+    <p class="subtitle">Elegant lighting control for your smart home</p>
+    <div class="theme-toggle" id="themeToggle">
+      <i class="fas fa-moon"></i>
+    </div>
+  </header>
+
+  <div class="voice-notice">
+    <i class="fas fa-microphone-alt"></i>
+    <span>Use Google Assistant or Alexa to voice control your lights</span>
+  </div>
+
+  <div class="devices-grid">
+    <!-- Living Room -->
+    <div class="device-card" id="living-room">
+      <div class="device-header">
+        <div class="device-icon">
+          <i class="fas fa-lightbulb"></i>
+        </div>
+        <div class="device-info">
+          <div class="device-name">Living Room</div>
+          <div class="device-status">
+            <span class="status-indicator status-off"></span>
+            <span>Offline</span>
+          </div>
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-on" onclick="controlDevice('living-room', 'on')">
+          <i class="fas fa-power-off"></i>
+          <span>ON</span>
+        </button>
+        <button class="btn btn-off" onclick="controlDevice('living-room', 'off')">
+          <i class="fas fa-power-off"></i>
+          <span>OFF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bedroom -->
+    <div class="device-card" id="bedroom">
+      <div class="device-header">
+        <div class="device-icon">
+          <i class="fas fa-lightbulb"></i>
+        </div>
+        <div class="device-info">
+          <div class="device-name">Bedroom</div>
+          <div class="device-status">
+            <span class="status-indicator status-off"></span>
+            <span>Offline</span>
+          </div>
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-on" onclick="controlDevice('bedroom', 'on')">
+          <i class="fas fa-power-off"></i>
+          <span>ON</span>
+        </button>
+        <button class="btn btn-off" onclick="controlDevice('bedroom', 'off')">
+          <i class="fas fa-power-off"></i>
+          <span>OFF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Kitchen -->
+    <div class="device-card" id="kitchen">
+      <div class="device-header">
+        <div class="device-icon">
+          <i class="fas fa-lightbulb"></i>
+        </div>
+        <div class="device-info">
+          <div class="device-name">Kitchen</div>
+          <div class="device-status">
+            <span class="status-indicator status-off"></span>
+            <span>Offline</span>
+          </div>
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-on" onclick="controlDevice('kitchen', 'on')">
+          <i class="fas fa-power-off"></i>
+          <span>ON</span>
+        </button>
+        <button class="btn btn-off" onclick="controlDevice('kitchen', 'off')">
+          <i class="fas fa-power-off"></i>
+          <span>OFF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const deviceIP = "http://192.168.1.100"; // Change to your device IP
+    const themeToggle = document.getElementById('themeToggle');
+    
+    // Dark mode toggle
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      
+      // Change icon
+      const icon = themeToggle.querySelector('i');
+      if (document.body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+      
+      // Save preference
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    });
+    
+    // Check for saved preference
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      const icon = themeToggle.querySelector('i');
+      icon.classList.remove('fa-moon');
+      icon.classList.add('fa-sun');
+    }
+    
+    function controlDevice(room, action) {
+      const card = document.getElementById(room);
+      const status = card.querySelector('.status-indicator');
+      const statusText = card.querySelector('.device-status span:last-child');
+      const btn = action === 'on' 
+        ? card.querySelector('.btn-on')
+        : card.querySelector('.btn-off');
+      
+      // Button press animation
+      btn.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        btn.style.transform = '';
+      }, 200);
+      
+      const roomNum = room === 'living-room' ? '1' : room === 'bedroom' ? '2' : '3';
+      
+      fetch(`${deviceIP}/${action}${roomNum}`)
+        .then(res => {
+          if (res.ok) {
+            // Update UI
+            if (action === 'on') {
+              status.classList.remove('status-off');
+              status.classList.add('status-on');
+              statusText.textContent = "Online";
+              card.classList.add('active');
+              
+              // Add glow effect
+              card.style.boxShadow = '0 15px 35px rgba(108, 92, 231, 0.2)';
+              setTimeout(() => {
+                card.style.boxShadow = '';
+              }, 1000);
+            } else {
+              status.classList.remove('status-on');
+              status.classList.add('status-off');
+              statusText.textContent = "Offline";
+              card.classList.remove('active');
+            }
+          }
+        })
+        .catch(() => {
+          // Error animation
+          btn.style.animation = 'shake 0.5s';
+          setTimeout(() => {
+            btn.style.animation = '';
+          }, 500);
+          alert("Failed to connect to device. Please check your network.");
+        });
+    }
+
+    // Add shake animation for errors
+    document.head.insertAdjacentHTML('beforeend', `
+      <style>
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-5px); }
+          40%, 80% { transform: translateX(5px); }
+        }
+      </style>
+    `);
+  </script>
+</body>
+</html>
